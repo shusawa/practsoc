@@ -1,0 +1,300 @@
+Practical 1
+Encrypting and Decrypting Data Using OpenSSL.
+
+Step 1: Encrypting a Text File
+
+[analyst@secOps ~]$ cd ./lab.support.files/ 
+
+[analyst@secOps lab.support.files]$
+
+[analyst@secOps lab.support.files]$ cat letter_to_grandma.txt
+
+[analyst@secOps lab.support.files]$ openssl aes-256-cbc -in letter_to_grandma.txt -out message.enc
+
+[analyst@secOps lab.support.files]$ cat message.enc
+
+[analyst@secOps lab.support.files]$ openssl aes-256-cbc -a -in letter_to_grandma.txt -out message.enc
+
+
+Step2: Decrypting Messages with OpenSSL
+
+[analyst@secOps lab.support.files]$ openssl aes-256-cbc -d -in message.enc -out decrypted_letter.txt
+
+[analyst@secOps lab.support.files]$ cat decrypted_letter.txt
+
+
+================================================================================================================
+Practical 2
+Demonstrate the use of Snort and Firewall Rules.
+
+Part 1: Preparing the Virtual Environment
+
+[analyst@secOps ~]$ sudo ./lab.support.files/scripts/configure_as_dhcp.sh
+
+[analyst@secOps ~]$ ifconfig
+
+
+
+Part 2: Firewall and IDS Logs
+
+[analyst@secOps ~]$ sudo ./lab.support.files/scripts/cyberops_extended_topo_no_fw.py
+
+b. From the mininet prompt, open a shell on R1 using the command below:
+
+mininet> xterm R1(1st)
+[analyst@secOps ~]$ sudo ./lab.support.files/scripts/start_snort.py
+
+
+mininet> xterm H10
+[analyst@secOps ~]$ sudo ./lab.support.files/scripts/mal_server_start.py
+[analyst@secOps ~]$ netstat -tunpa
+
+mininet> xterm R1(2nd)
+
+[root@sec0ps analyst]# tail -f /var/log/snort/alert
+
+
+mininet> xterm H5
+[root@secOps analyst]# curl -O 209.165.202.133:6666/W32.Nimda.Amm.exe
+
+
+[root@secOps analyst]#tcpdump –i H5-eth0 –w nimda.download.pcap&
+
+[root@secOps analyst]#curl -O 209.165.202.133:6666/W32.Nimda.Amm.exe
+
+[root@secOps analyst]# fg 
+
+[root@secOps analyst]# ls -l
+
+
+Step 2: Tuning Firewall Rules Based on IDS Alerts
+mininet > xterm R1(3rd)
+
+[root@secOps ~]# iptables -L -v
+
+[root@secOps ~]# iptables -I FORWARD -p tcp -d 209.165.202.133 --dport 6666 -j DROP
+
+ON H5
+[root@secOps analyst]# wget 209.165.202.133:6666/W32.Nimda.Amm.exe
+
+
+Part 3: Terminate and Clear Mininet Process
+mininet>quit
+
+analyst@secOps scripts]$ sudo mn –c
+
+================================================================================================================
+Practical 3
+Demonstrate Extract an Executable from a PCAP
+
+[analyst@secOps]# cd ./lab.support.files/pcaps
+
+[analyst@secOps pcaps]# ls -l
+
+[analyst@secOps pcaps]# wireshark-gtk nimda.download.pcap
+
+
+Wiresharkh
+Step 4: Check HTTP and check host and full URL to download the malware file
+
+Step 5: right click on TCP which shows top on the list. Then click on Follow TCP 
+Stream
+
+Step 6: Check the original file name in the Follow TCP Stream window
+
+Step 7: Now we need to download and check that file by uploading to an online 
+virustotal website.
+
+Find exe file from HTTP>click file> select export obj > Select exe File >Save as > 
+Select Folder> Save
+
+[analyst@secOps pcaps]# ls -l
+
+[analyst@secOps pcaps]# file W32.Nimda.Amm.exe
+
+
+
+
+
+
+
+
+
+
+
+
+================================================================================================================
+
+Practical 5
+Create your own syslog Server
+
+Step 1: sudo apt-get update
+Step 2: sudo apt-get install rsyslog
+Step 3: sudo nano /etc/rsyslog.conf
+uncomment
+module(load="imudp")
+input(type="imudp" port="514")
+module(load="imtcp")
+input(type="imtcp" port="514")
+add below lines before GLOBAL DIRECTIVES
+$template remote-incominglogs,"/var/log/%HOSTNAME%/%PROGRAMNAME%.log"
+*.* ?remote-incoming-logs
+Step 4: sudo systemctl restart rsyslog
+Step 5: ss -tunelp | grep 514
+Step 6: sudo ufw allow 514/tcp
+Step 7: sudo ufw allow 514/udp
+Step 8: sudo rsyslogd -N1 -f /etc/rsyslog.con
+
+Done!
+
+================================================================================================================
+
+Practical 6
+Configure your Linux system to send syslog messages to a syslog server and Read 
+them (do in kali linux)
+
+Step 1: sudo apt-get update
+Step 2: sudo apt-get install rsyslog
+Step 3: sudo nano /etc/rsyslog.conf
+add below lines at the end of the file
+@192.168.137.50:514
+*.* @@192.168.137.50:514
+
+$ActionQueueFileName queue
+$ActionQueueMaxDiskSpace 1g
+$ActionQueueSaveOnShutdown on
+$ActionQueueType LinkedList
+$ActionResumeRetryCount -1
+Step 4: sudo systemctl restart rsyslog
+now go to ubuntu terminal
+Step 5: ls /var/log/ 
+Step 6: sudo tail -f /var/log/kali/rsyslogd.log
+
+Done!
+
+
+================================================================================================================
+
+Practical 7 
+Install and Run Splunk on Linux
+
+Step 1: cd /tmp
+Step 2: wget https://download.splunk.com/products/splunk/releases/7.1.1/linux/
+splunk-7.1.1-8f0ead9ec3db-linux-2.6-amd64.deb
+Step 3: sudo dpkg -i splunk-7.1.1-8f0ead9ec3db-linux-2.6-amd64.deb
+Step 4: sudo /opt/splunk/bin/splunk enable boot-start
+Note: Press enter key till you reach to the end of the agreement, then you have to 
+accept the license agreement by typing “y”.
+Then you have to enter the initial admin password and use this password to 
+access the web portal
+Step 5: sudo service splunk start 
+Step 6: sudo service splunk status
+Step 7: open browser and go to http://kali:8080
+Step 8: login splunk with id as admin and password as entered in step 4
+
+Done!
+
+================================================================================================================
+
+Practical 8
+Install and Configure ELK on Linux
+
+Part 1 (installing Java)
+Step 1: cd /tmp
+Step 2: sudo apt update 
+Step 3: sudo apt install default-jre
+Step 4: java --version
+
+Part 2 (installing elasticsearch)
+Step 5: curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+Step 6: echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a 
+/etc/apt/sources.list.d/elastic-7.x.list”
+Step 7: sudo apt update
+Step 8: sudo apt install elasticsearch
+Step 9: sudo nano /etc/elasticsearch/elasticsearch.yml
+uncomment 
+network.host:localhost
+http.port:9200
+Step 10: sudo systemctl start elasticsearch
+Step 11: sudo systemctl enable elasticsearch
+Step 12: curl -X GET 'http://kali:9200'
+
+Done!
+================================================================================================================
+
+Practical 9
+Install and Configure GrayLog on Linux 
+
+Part 1 (continuation of practical 8)
+Step 1: sudo nano /etc/elasticsearch/elasticsearch.yml
+uncomment
+cluster.name: graylog
+action.auto_create_index: false
+Step 2: sudo systemctl daemon-reload
+Step 3: sudo systemctl start elasticsearch
+Step 4: sudo systemctl enable elasticsearch
+Step 5: curl -X GET 'http://localhost:9200'
+
+Part 2 (installing Mongo DB)
+Step 6: sudo apt update
+Step 7: sudo apt install -y mongodb-server
+Step 8: sudo systemctl start mongodb
+
+Part 3 (installing graylog server)
+Step 9: wget https://packages.graylog2.org/repo/packages/graylog-4.2-
+repository_latest.deb
+Step 10: sudo dpkg -i graylog-3.3-repository_latest.deb
+Step 11: sudo apt update
+Step 12: sudo apt install -y graylog-server
+Step 13: sudo apt install pwgen
+Step 14: pwgen -N 1 -s 96
+Step 15: sudo gedit /etc/graylog/server/server.conf
+Step 16: sudo nano /etc/graylog/server/server.conf
+replace password with the choice of your password
+Step 17: echo -n password | sha256sum
+
+
+Part 4 (setup greylog web interface)
+Step 18: sudo gedit /etc/graylog/server/server.conf
+put 
+http_bind_address = 192.168.0.10:9000
+http_external_uri = http://public_ip:9000/
+Step 19: sudo systemctl daemon-reload
+Step 20: sudo systemctl start graylog-server
+Step 21: sudo systemctl enable graylog-server
+Step 22: sudo tail -f /var/log/graylog-server/server.log
+On the successful start of the Graylog server, you should get the following 
+message in the log file.
+2020-08-03T16:03:06.326-04:00 INFO [ServerBootstrap] Graylog server up and 
+running.
+Step 23: open browser for accessing greylog web interface and type
+http://kali:8080
+================================================================================================================
+
+Practical 10
+ Demonstrate Conversion of Data into a Universal Format
+
+Cyberops vm
+
+“cd /home/analyst/lab.support.files/”
+
+ls –l
+
+“awk 'BEGIN {FS=OFS="|"} {$3=strftime("%c",$3)} {print}' applicationX_in_epoch.log”
+
+nano applicationX_in_epoch.log
+
+awk 'BEGIN {FS=OFS="|"} {$3=strftime("%c",$3)} {print}' applicationX_in_epoch.log > applicationX_in_human.log
+
+cat applicationX_in_human.log
+
+
+Part 2: Normalize Timestamps in an Apache Log File
+
+[analyst@secOps lab.support.files]$ cat apache_in_epoch.log
+
+
+[analyst@secOps lab.support.files]$ awk 'BEGIN {FS=OFS=" "} {$4=strftime("%c",$4)} {print}' apache_in_epoch.log
+
+Step 5: To fix the problem, the square brackets must be removed from the timestamp field before the conversion takes place. Adjust the script by adding two actions before the conversion. As shown,
+[analyst@secOps lab.support.files]$ awk 'BEGIN {FS=OFS=" "} {gsub(/[|]/,"",$4)}{print}{$4=strftime("%c",$4)}{print}' apache_in_epoch.log
